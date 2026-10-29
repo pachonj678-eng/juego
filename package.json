@@ -8,7 +8,8 @@
     "dev": "concurrently -n \"API,GAME\" -c \"cyan,magenta\" \"tsx watch server/server.ts\" \"vite\"",
     "dev:server": "tsx watch server/server.ts",
     "dev:client": "vite",
-    "build": "vite build && tsc -p tsconfig.server.json"
+    "build": "npx vite build && npx tsc -p tsconfig.server.json",
+    "start": "npx tsx server/server.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
