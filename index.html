@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metal Slug 2D // Arcade Run-and-Gun Engine</title>
+</head>
+<body class="bg-arcade-dark min-h-screen text-gray-100 flex flex-col items-center p-4">
+
+  <!-- Cabecera Arcade Marquee -->
+  <header class="w-full max-w-5xl flex flex-col sm:flex-row items-center justify-between border-b-2 border-arcade-border pb-4 mb-4 gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-4 bg-arcade-red animate-pulse rounded-full"></div>
+      <h1 class="text-2xl sm:text-3xl font-arcade text-arcade-yellow tracking-wider text-arcade-shadow">
+        METAL SLUG 2D
+      </h1>
+      <span class="text-xs bg-arcade-red text-white px-2 py-0.5 rounded font-mono font-bold tracking-widest">
+        FASE 4: ENEMY AI & HEAVIES
+      </span>
+    </div>
+
+    <!-- Indicador de Usuario y Sesión Real -->
+    <div id="auth-status-container" class="flex items-center gap-3 font-mono text-sm bg-arcade-panel px-4 py-2 rounded-lg border border-arcade-border">
+      <span id="user-display" class="text-arcade-green font-bold">INVITADO</span>
+      <button id="btn-open-auth" class="bg-arcade-border hover:bg-arcade-red text-xs px-3 py-1 rounded transition-colors uppercase font-bold">
+        Iniciar Sesión
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal: Pantalla de Juego y Controles -->
+  <main class="w-full max-w-5xl flex flex-col lg:flex-row gap-6 items-start">
+    
+    <!-- Pantalla CRT con Canvas -->
+    <div class="flex-1 w-full flex flex-col items-center">
+      <div class="relative rounded-lg overflow-hidden border-4 border-arcade-border shadow-arcade-screen bg-black crt-overlay">
+        <canvas id="game-canvas" class="block w-full max-w-[800px] h-auto aspect-[16/9] cursor-crosshair"></canvas>
+      </div>
+
+      <!-- Barra de Estado Rápido y Atajos -->
+      <div class="w-full mt-3 flex flex-wrap items-center justify-between text-xs font-mono bg-arcade-panel p-3 rounded-lg border border-arcade-border gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-arcade-yellow font-bold">CONTROLES:</span>
+          <span>[WASD] Mover</span>
+          <span class="text-arcade-green">[J] Disparo/Cuchillo</span>
+          <span class="text-arcade-orange">[L] Granada/Cañón</span>
+          <span class="text-cyan-400">[S+K] Montar Tanque</span>
+          <span class="text-red-400">[U] Slug Attack</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-toggle-debug" class="bg-arcade-border hover:bg-gray-600 px-2 py-1 rounded text-[11px] font-bold">
+            [H] Hitboxes
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Generación y Pruebas de Enemigos (Fase 4) -->
+      <div class="w-full mt-2 flex flex-wrap items-center justify-between text-xs font-mono bg-arcade-panel/90 p-2.5 rounded-lg border border-red-700/60 gap-2">
+        <span class="text-arcade-red font-bold text-[11px]">ENEMIGOS FASE 4:</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-respawn-tank" class="bg-red-950 hover:bg-red-900 text-arcade-red px-2.5 py-1 rounded font-bold border border-arcade-red/70">
+            + Tanque "Iron Iso" (20 HP)
+          </button>
+          <button id="btn-respawn-chopper" class="bg-orange-950 hover:bg-orange-900 text-arcade-orange px-2.5 py-1 rounded font-bold border border-arcade-orange/70">
+            + Helicóptero "R-Shobu" (15 HP)
+          </button>
+          <button id="btn-respawn-soldiers" class="bg-yellow-950 hover:bg-yellow-900 text-arcade-yellow px-2.5 py-1 rounded font-bold border border-arcade-yellow/70">
+            + Patrulla Infantería (1 HP)
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Controles SV-001 "Metal Slug" y POWs -->
+      <div class="w-full mt-2 flex flex-wrap items-center justify-between text-xs font-mono bg-arcade-panel/80 p-2 rounded-lg border border-cyan-700/60 gap-2">
+        <span class="text-cyan-400 font-bold text-[10px]">VEHÍCULO Y POWS:</span>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button id="btn-toggle-mount" class="bg-cyan-950 hover:bg-cyan-900 text-cyan-300 px-2 py-0.5 rounded text-[11px] font-bold border border-cyan-500/60">
+            [S+K] Montar Tanque
+          </button>
+          <button id="btn-slug-attack" class="bg-red-950 hover:bg-red-800 text-arcade-red px-2 py-0.5 rounded text-[11px] font-bold border border-arcade-red animate-pulse">
+            [U] SLUG ATTACK
+          </button>
+          <button id="btn-repair-slug" class="bg-blue-950 hover:bg-blue-900 text-blue-300 px-2 py-0.5 rounded text-[11px] font-bold border border-blue-600">
+            Reparar Tanque
+          </button>
+          <button id="btn-spawn-pow" class="bg-yellow-950 hover:bg-yellow-900 text-arcade-yellow px-2 py-0.5 rounded text-[11px] font-bold border border-arcade-yellow/60">
+            + Generar POW
+          </button>
+          <button id="btn-weapon-shotgun" class="bg-orange-950 hover:bg-orange-900 text-arcade-orange px-2 py-0.5 rounded text-[11px] font-bold border border-arcade-orange/60">
+            [S] Shotgun
+          </button>
+          <button id="btn-weapon-rocket" class="bg-red-950 hover:bg-red-900 text-arcade-red px-2 py-0.5 rounded text-[11px] font-bold border border-arcade-red/60">
+            [R] Rocket
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Lateral: Telemetría de Arquitectura y Base de Datos -->
+    <aside class="w-full lg:w-80 flex flex-col gap-4 font-mono text-xs">
+      
+      <!-- Panel de Verificación de Requisitos Fase 4 -->
+      <div class="bg-arcade-panel p-4 rounded-lg border border-arcade-border">
+        <h2 class="font-arcade text-xs text-arcade-yellow mb-3 border-b border-arcade-border pb-1">
+          CHECKLIST FASE 4 (ENEMY AI)
+        </h2>
+        <ul class="space-y-1.5 text-gray-300 text-[11px]">
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Infantería: 1 HP, Patrulla, Pánico y Carga</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Muerte Balística Exagerada en Barrena</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Tanque "Iron Iso" (20 HP) con Hit-Flash Blanco</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Helicóptero "R-Shobu" (15 HP) Vuelo Sinusoidal</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Bombardeo Vertical y Proyectiles Grandes</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Esquiva de Proyectiles por Salto o Agachado</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-arcade-green font-bold">✓</span>
+            <span>Catálogo y Bajas en SQLite Real</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Catálogo de Enemigos en SQLite -->
+      <div class="bg-arcade-panel p-4 rounded-lg border border-arcade-border">
+        <h2 class="font-arcade text-xs text-arcade-red mb-2 border-b border-arcade-border pb-1">
+          ENEMIGOS (SQLITE)
+        </h2>
+        <div id="enemies-catalog-container" class="space-y-1.5 text-[11px]">
+          <div class="text-gray-500 italic">Cargando enemigos SQLite...</div>
+        </div>
+      </div>
+
+      <!-- Tabla de High Scores Reales (Conectada a SQLite) -->
+      <div class="bg-arcade-panel p-4 rounded-lg border border-arcade-border">
+        <div class="flex items-center justify-between mb-3 border-b border-arcade-border pb-1">
+          <h2 class="font-arcade text-xs text-arcade-yellow">TOP PLAYERS (SQLITE)</h2>
+          <button id="btn-refresh-scores" class="text-arcade-green hover:underline text-[10px]">Actualizar</button>
+        </div>
+        <div id="scores-container" class="space-y-1.5">
+          <div class="text-gray-500 italic">Cargando puntuaciones de la base de datos...</div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Modal de Autenticación Real (Cero Mocks) -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-arcade-panel border-2 border-arcade-yellow p-6 rounded-lg max-w-sm w-full font-mono">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modal-title" class="font-arcade text-sm text-arcade-yellow">INICIAR SESIÓN</h3>
+        <button id="btn-close-modal" class="text-gray-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <div id="auth-alert" class="hidden mb-3 p-2 rounded text-xs"></div>
+
+      <form id="auth-form" class="space-y-3">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">USUARIO (Mín. 3 caracteres)</label>
+          <input type="text" id="auth-username" required minlength="3" class="w-full bg-arcade-dark border border-arcade-border rounded p-2 text-white text-sm focus:border-arcade-yellow outline-none uppercase" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">CONTRASEÑA (Mín. 6 caracteres)</label>
+          <input type="password" id="auth-password" required minlength="6" class="w-full bg-arcade-dark border border-arcade-border rounded p-2 text-white text-sm focus:border-arcade-yellow outline-none" />
+        </div>
+        <button type="submit" id="btn-submit-auth" class="w-full bg-arcade-yellow hover:bg-yellow-400 text-black font-arcade text-xs py-2 rounded font-bold transition-all mt-2">
+          ENTRAR
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <button id="btn-toggle-auth-mode" class="text-xs text-arcade-green hover:underline">
+          ¿No tienes cuenta? Regístrate aquí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

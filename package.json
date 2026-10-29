@@ -1,0 +1,36 @@
+{
+  "name": "metal-slug-2d",
+  "version": "1.0.0",
+  "description": "Metal Slug 2D Run-and-Gun accurate arcade mechanics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n \"API,GAME\" -c \"cyan,magenta\" \"tsx watch server/server.ts\" \"vite\"",
+    "dev:server": "tsx watch server/server.ts",
+    "dev:client": "vite",
+    "build": "vite build && tsc -p tsconfig.server.json"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.17.0",
+    "@types/sqlite3": "^3.1.11",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.0.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
